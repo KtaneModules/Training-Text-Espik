@@ -40,11 +40,7 @@ public class TrainingText : MonoBehaviour {
 
     private bool displayingModuleName = false;
 
-    private int strikes;
-    private double bombTime;
-    private int roundedBombTime;
-
-    private int correctHour;
+    /*private int correctHour;
     private int correctMinute;
     private string correctState;
 
@@ -61,7 +57,11 @@ public class TrainingText : MonoBehaviour {
     private int finishingSecond;
 
     private int actualCorrectTime;
-    private int actualCurrentTime;
+    private int actualCurrentTime;*/
+
+    private int correctTime = 0;
+    private int currentTime = 0;
+    private int realTime = 0;
 
     // Ran as bomb loads
     private void Awake() {
@@ -106,15 +106,7 @@ public class TrainingText : MonoBehaviour {
 
 
         // Sets a random time on the clock
-        currentHour = UnityEngine.Random.Range(1, 13);
-        currentMinute = UnityEngine.Random.Range(0, 60);
-
-        int rand = UnityEngine.Random.Range(0, 2);
-        if (rand == 0)
-            currentState = "AM";
-
-        else
-            currentState = "PM";
+        currentTime = UnityEngine.Random.Range(0, 1440);
 
         CalculateCorrectTime();
         DisplayCurrentTime();
@@ -123,70 +115,106 @@ public class TrainingText : MonoBehaviour {
     }
 
 
-    // Calculates correct time
-    private void CalculateCorrectTime() {
-        correctHour = module.getMonth() % 12;
-        correctMinute = module.getDay();
+    // Formats the time
+    private string FormatTime(int time) {
+        string hour, minute, state;
 
-        if (lastSerialDigit % 2 == 0)
-            correctState = "PM";
+        if (time >= 720) {
+            time -= 720;
+            state = "PM";
+        }
 
         else
-            correctState = "AM";
+            state = "AM";
 
-        correctHour = correctHour % 12;
-        Debug.LogFormat("[Training Text #{0}] The unmodified time is {1}:{2} {3}", moduleId, correctHour, FormatMinutes(correctMinute), correctState);
-        if (correctHour == 12)
-            correctHour = 0;
+        int hours = 0;
+        while (time >= 60) {
+            hours++;
+            time -= 60;
+        }
+
+        hour = hours.ToString();
+        if (hour == "0")
+            hour = "12";
+
+        if (time < 10)
+            minute = "0" + time.ToString();
+
+        else
+            minute = time.ToString();
+
+        return hour + ":" + minute + " " + state;
+    }
+
+    // Modifies the time to stay in bounds
+    private int ModifyTime(int time) {
+        while (time < 0)
+            time += 1440;
+
+        return time % 1440;
+    }
+
+
+
+
+    // Calculates correct time
+    private void CalculateCorrectTime() {
+        correctTime += module.getMonth() * 60;
+        correctTime += module.getDay();
+
+        if (lastSerialDigit % 2 == 0)
+            correctTime += 720;
+
+        Debug.LogFormat("[Training Text #{0}] The unmodified time is {1}", moduleId, FormatTime(correctTime));
 
 
         // Modifies the time
         bool rulesApplied = false;
 
         if (module.getYear() < 2017) {
-            correctMinute += 45;
+            correctTime = ModifyTime(correctTime + 45);
             rulesApplied = true;
             Debug.LogFormat("[Training Text #{0}] The module was released before 2017. (+45 minutes)", moduleId);
         }
 
         if (module.getHasQuotes() == true) {
-            correctMinute += 20;
+            correctTime = ModifyTime(correctTime + 20);
             rulesApplied = true;
             Debug.LogFormat("[Training Text #{0}] The module's flavor text has quotation marks. (+20 minutes)", moduleId);
         }
 
         if (module.getStartsDP() == true) {
-            correctMinute -= 30;
+            correctTime = ModifyTime(correctTime - 30);
             rulesApplied = true;
             Debug.LogFormat("[Training Text #{0}] The module's name starts with a letter between D and P. (-30 minutes)", moduleId);
         }
 
-        if (module.getIsMonday() == true) {
-            correctHour -= 5;
+        if (module.getMonth() == 1) {
+            correctTime = ModifyTime(correctTime - 300);
             rulesApplied = true;
-            Debug.LogFormat("[Training Text #{0}] The module was released on a Monday. (-5 hours)", moduleId);
+            Debug.LogFormat("[Training Text #{0}] The module was released in January. (-5 hours)", moduleId);
         }
 
         if (Bomb.GetSolvableModuleNames().Count(x => x.Contains("Training Text")) > 1) {
-            correctHour++;
+            correctTime = ModifyTime(correctTime + 60);
             rulesApplied = true;
             Debug.LogFormat("[Training Text #{0}] There is another Training Text module on the bomb. (+1 hour)", moduleId);
         }
 
         if (hasSerialPort == true) {
-            correctMinute += 5;
+            correctTime = ModifyTime(correctTime + 5);
             rulesApplied = true;
             Debug.LogFormat("[Training Text #{0}] The bomb has a serial port. (+5 minutes)", moduleId);
         }
 
         if (hasEmptyPlate == true) {
-            correctMinute -= 90;
+            correctTime = ModifyTime(correctTime - 90);
             rulesApplied = true;
             Debug.LogFormat("[Training Text #{0}] The bomb has an empty port plate. (-90 minutes)", moduleId);
         }
 
         if (batteryCount == 0) {
-            correctMinute -= 10;
+            correctTime = ModifyTime(correctTime - 10);
             rulesApplied = true;
             Debug.LogFormat("[Training Text #{0}] The bomb has no batteries. (-10 minutes)", moduleId);
         }
@@ -194,69 +222,29 @@ public class TrainingText : MonoBehaviour {
         if (rulesApplied == false)
             Debug.LogFormat("[Training Text #{0}] No rules from Step 3 applied.", moduleId);
 
-
-        // Catches rollovers in the time
-        while (correctMinute >= 60) {
-            correctMinute -= 60;
-            correctHour++;
-        }
-
-        while (correctMinute < 0) {
-            correctMinute += 60;
-            correctHour--;
-        }
-
-        while (correctHour >= 12) {
-            correctHour -= 12;
-            if (correctState == "PM")
-                correctState = "AM";
-
-            else
-                correctState = "PM";
-        }
-
-        while (correctHour < 0) {
-            correctHour += 12;
-            if (correctState == "PM")
-                correctState = "AM";
-
-            else
-                correctState = "PM";
-        }
-
-        if (correctHour == 0)
-            correctHour = 12;
-
+        else
+            Debug.LogFormat("[Training Text #{0}] The time after Step 3 is {1}", moduleId, FormatTime(correctTime));
 
         // If the specified module is on the bomb
         if (Bomb.GetSolvableModuleNames().Count(x => x.Contains(module.getModuleName())) > 0) {
-            Debug.LogFormat("[Training Text #{0}] The time after Step 3 is {1}:{2} {3}", moduleId, correctHour, FormatMinutes(correctMinute), correctState);
             Debug.LogFormat("[Training Text #{0}] The module selected is present on the bomb.", moduleId);
-
-            correctHour = (correctHour + 6) % 12;
-            correctMinute = (correctHour + 30) % 60;
-
-            if (correctState == "PM")
-                correctState = "AM";
-
-            else
-                correctState = "PM";
-
-            if (correctHour == 0)
-                correctHour = 12;
+            correctTime = ModifyTime(correctTime + 1110);
         }
 
-        Debug.LogFormat("[Training Text #{0}] The correct time to submit is {1}:{2} {3}.", moduleId, correctHour, FormatMinutes(correctMinute), correctState);
+        Debug.LogFormat("[Training Text #{0}] The correct time to submit is {1}", moduleId, FormatTime(correctTime));
     }
 
 
     // Displays time and highlights tickmarks
     private void DisplayCurrentTime() {
-        ClockText.text = currentHour.ToString() + ":" + FormatMinutes(currentMinute) + " " + currentState;
+        ClockText.text = FormatTime(currentTime);
 
-        ClockNumbers[currentHour % 12].color = ClockColors[1];
+        int currentHour = currentTime % 720 / 60;
+        int currentMinute = currentTime % 60;
 
-        if (currentHour == 12) {
+        ClockNumbers[currentHour].color = ClockColors[1];
+
+        if (currentHour == 0) {
             ClockNumbers[11].color = ClockColors[0];
             ClockNumbers[1].color = ClockColors[0];
         }
@@ -279,199 +267,58 @@ public class TrainingText : MonoBehaviour {
         }
     }
 
-    // Formats the minutes on the clock
-    private string FormatMinutes(int mins) {
-        if (mins >= 10)
-            return mins.ToString();
-
-        else
-            return "0" + mins.ToString();
-    }
-
 
     // Submit button pressed
-    private void SubmitButtonPressed(bool autoSolverFindAnswer = false) {
-        if (!autoSolverFindAnswer) {
-            SubmitButton.AddInteractionPunch();
-            Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, gameObject.transform);
-        }
+    private void SubmitButtonPressed() {
+        SubmitButton.AddInteractionPunch();
+        Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, gameObject.transform);
         bool correct = false;
 
         if (moduleSolved == false) {
-            if (!autoSolverFindAnswer)
-                Debug.LogFormat("[Training Text #{0}] You submitted {1}:{2} {3}.", moduleId, currentHour, FormatMinutes(currentMinute), currentState);
+            Debug.LogFormat("[Training Text #{0}] You submitted {1}", moduleId, FormatTime(currentTime));
 
-            // If the correct time can be reached within the bomb's remaining time
-            if (DateTime.Now.DayOfWeek.ToString() != "Friday" && ZenModeActive == false) {
-                // Gets the real time left on the bomb's timer
-                bombTime = Math.Floor(Bomb.GetTime());
-                strikes = Bomb.GetStrikes();
+            // If the correct time is within an hour of the real time
+            if (DateTime.Now.DayOfWeek.ToString() != "Friday") {
+                // Gets the real time
+                realTime = DateTime.Now.Hour * 60 + DateTime.Now.Minute;
+                Debug.LogFormat("[Training Text #{0}] The current local time when pressing the button was {1}", moduleId, FormatTime(realTime));
 
-                // Modifies the bomb time with strikes
-                switch (strikes) {
-                case 0: break;
-                case 1: bombTime /= 1.25; break;
-                case 2: bombTime /= 1.5; break;
-                case 3: bombTime /= 1.75; break;
-                default: bombTime /= 2; break;
-                }
-
-                roundedBombTime = (int)Math.Floor(bombTime);
-
-                // Gets the current real time
-                realHour = DateTime.Now.Hour;
-                realMinute = DateTime.Now.Minute;
-                realSecond = DateTime.Now.Second;
-
-                if (!autoSolverFindAnswer) {
-                    if (realHour == 0)
-                        Debug.LogFormat("[Training Text #{0}] The current local time when pressing the button was 12:{1} AM.", moduleId, FormatMinutes(realMinute));
-
-                    else if (realHour == 12)
-                        Debug.LogFormat("[Training Text #{0}] The current local time when pressing the button was 12:{1} PM.", moduleId, FormatMinutes(realMinute));
-
-                    else if (realHour > 12)
-                        Debug.LogFormat("[Training Text #{0}] The current local time when pressing the button was {1}:{2} PM.", moduleId, realHour - 12, FormatMinutes(realMinute));
-
-                    else
-                        Debug.LogFormat("[Training Text #{0}] The current local time when pressing the button was {1}:{2} AM.", moduleId, realHour, FormatMinutes(realMinute));
-                }
-
-                // Adds the bomb's timer to the real time to get the finishing time
-                finishingHour = realHour;
-                finishingMinute = realMinute;
-                finishingSecond = realSecond;
-
-                finishingSecond += roundedBombTime;
-
-                while (finishingSecond >= 60) {
-                    finishingSecond -= 60;
-                    finishingMinute++;
-                }
-
-                while (finishingMinute >= 60) {
-                    finishingMinute -= 60;
-                    finishingHour++;
-                }
-
-                while (finishingHour >= 24)
-                    finishingHour -= 24;
-
-                // Determines if the answer time can be reached within the bomb's time
-                bool timeReached = false;
-
-                int modifiedCorrectHour = correctHour % 12;
-                int modifiedFinishingHour = finishingHour;
-
-                if (correctState == "PM")
-                    modifiedCorrectHour += 12;
-
-                if (modifiedCorrectHour < realHour)
-                    modifiedCorrectHour += 24;
-
-                if (modifiedFinishingHour < realHour)
-                    modifiedFinishingHour += 24;
-
-
-                if (!autoSolverFindAnswer) {
-                    if (modifiedFinishingHour % 24 == 0)
-                        Debug.LogFormat("[Training Text #{0}] The bomb will finish at 12:{1} AM.", moduleId, FormatMinutes(finishingMinute));
-
-                    else if (modifiedFinishingHour % 24 == 12)
-                        Debug.LogFormat("[Training Text #{0}] The bomb will finish at 12:{1} PM.", moduleId, FormatMinutes(finishingMinute), FormatMinutes(finishingSecond));
-
-                    else if (modifiedFinishingHour % 24 > 12)
-                        Debug.LogFormat("[Training Text #{0}] The bomb will finish at {1}:{2} PM.", moduleId, (modifiedFinishingHour - 12) % 24, FormatMinutes(finishingMinute));
-
-                    else
-                        Debug.LogFormat("[Training Text #{0}] The bomb will finish at {1}:{2} AM.", moduleId, modifiedFinishingHour % 24, FormatMinutes(finishingMinute));
-                }
-
-
-                if (realHour < modifiedCorrectHour && modifiedCorrectHour < modifiedFinishingHour)
-                    timeReached = true;
-
-                else if (realHour == modifiedFinishingHour && realMinute < correctMinute && correctMinute <= finishingMinute)
-                    timeReached = true;
-
-                else if (modifiedCorrectHour == modifiedFinishingHour && realHour != modifiedFinishingHour && correctMinute <= finishingMinute)
-                    timeReached = true;
-
-                else if (modifiedCorrectHour == realHour && realHour != modifiedFinishingHour && correctMinute > realMinute)
-                    timeReached = true;
-
-
-                // Time is not reached
-                if (timeReached == false) {
-                    submitCorrectTime = true;
-                    if (currentHour == correctHour && currentMinute == correctMinute && currentState == correctState)
-                        correct = true;
-                }
-
-                // Time is reached
-                else {
-                    submitCorrectTime = false;
-                    if (!autoSolverFindAnswer)
-                        Debug.LogFormat("[Training Text #{0}] Note that the correct answer time could be reached in the bomb's remaining time when the button was pressed.", moduleId);
-                    actualCorrectTime = finishingMinute + finishingHour * 60;
-                    actualCurrentTime = currentMinute + currentHour * 60;
-
-                    if (currentHour == 12 && currentState == "AM")
-                        actualCurrentTime -= (12 * 60);
-
-                    if (currentHour != 12 && currentState == "PM")
-                        actualCurrentTime += (12 * 60);
-
-                    if (actualCorrectTime < 23 * 60 + 55 && actualCurrentTime > actualCorrectTime && actualCurrentTime <= actualCorrectTime + 5)
-                        correct = true;
-
-                    else if (actualCurrentTime < 5 && actualCurrentTime + (24 * 60) > actualCorrectTime && actualCurrentTime + (24 * 60) <= actualCorrectTime + 5)
-                        correct = true;
-
-                    else if (actualCurrentTime > actualCorrectTime && actualCurrentTime <= actualCorrectTime + 5)
-                        correct = true;
-                }
+                // Compares the time
+                if ((correctTime >= realTime - 60 && correctTime <= realTime + 60) ||
+                    (correctTime + 1440 >= realTime - 60 && correctTime + 1440 <= realTime + 60) ||
+                    (correctTime - 1440 >= realTime - 60 && correctTime - 1440 <= realTime + 60))
+                    correctTime = realTime;
             }
 
+            else
+                Debug.LogFormat("[Training Text #{0}] The answer was submitted on a Friday.", moduleId);
 
-            else if (currentHour == correctHour && currentMinute == correctMinute && currentState == correctState) {
-                submitCorrectTime = true;
+
+            // Correct answer
+            if (currentTime == correctTime) {
+                Debug.LogFormat("[Training Text #{0}] Module solved!", moduleId);
+                GetComponent<KMBombModule>().HandlePass();
+                Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.CorrectChime, gameObject.transform);
+                moduleSolved = true;
                 correct = true;
             }
-            answerIsCorrect = correct;
-            if (!autoSolverFindAnswer) {
-                if (DateTime.Now.DayOfWeek.ToString() == "Friday") {
-                    Debug.LogFormat("[Training Text #{0}] Note that it was Friday when the button was pressed.", moduleId);
-                }
 
-
-                // Correct answer
-                if (correct == true) {
-                    Debug.LogFormat("[Training Text #{0}] Module solved!", moduleId);
-                    GetComponent<KMBombModule>().HandlePass();
-                    Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.CorrectChime, gameObject.transform);
-                    moduleSolved = true;
-                }
-
-                // Incorrect answer
-                else {
-                    Debug.LogFormat("[Training Text #{0}] Strike!", moduleId);
-                    GetComponent<KMBombModule>().HandleStrike();
-                }
+            // Incorrect answer
+            else {
+                Debug.LogFormat("[Training Text #{0}] Strike!", moduleId);
+                GetComponent<KMBombModule>().HandleStrike();
             }
         }
 
-        if (!autoSolverFindAnswer) {
-            // Displays the module name on the top screen
-            if (displayingModuleName == false) {
-                displayingModuleName = true;
+        // Displays the module name on the top screen
+        if (displayingModuleName == false) {
+            displayingModuleName = true;
 
-                if (correct == true)
-                    AnswerText.text = module.getModuleName();
+            if (correct == true)
+                AnswerText.text = module.getModuleName();
 
-                else
-                    StartCoroutine(ModuleNameFlash());
-            }
+            else
+                StartCoroutine(ModuleNameFlash());
         }
     }
 
@@ -502,56 +349,18 @@ public class TrainingText : MonoBehaviour {
              * 3 = Minute Down
              */
 
-            currentHour = currentHour % 12;
-
             switch (i) {
-            case 0: currentHour++; break;
-            case 1: currentHour--; break;
-            case 2: currentMinute++; break;
-            case 3: currentMinute--; break;
+            case 0: currentTime = ModifyTime(currentTime + 60); break;
+            case 1: currentTime = ModifyTime(currentTime - 60); break;
+            case 2: currentTime = ModifyTime(currentTime + 1); break;
+            case 3: currentTime = ModifyTime(currentTime - 1); break;
             }
-
-            while (currentMinute >= 60) {
-                currentMinute -= 60;
-                currentHour++;
-            }
-
-            while (currentMinute < 0) {
-                currentMinute += 60;
-                currentHour--;
-            }
-
-            while (currentHour >= 12) {
-                currentHour -= 12;
-                if (currentState == "PM")
-                    currentState = "AM";
-
-                else
-                    currentState = "PM";
-            }
-
-            while (currentHour < 0) {
-                currentHour += 12;
-                if (currentState == "PM")
-                    currentState = "AM";
-
-                else
-                    currentState = "PM";
-            }
-
-            if (currentHour == 0)
-                currentHour = 12;
 
             DisplayCurrentTime();
         }
     }
-
-#pragma warning disable 414
-    private bool ZenModeActive;
-#pragma warning restore 414
-
-
-    // Twitch Plays Support - Thanks to eXish & kavinkul
+    
+ /*   // Twitch Plays Support - Thanks to eXish & kavinkul
 
 
 #pragma warning disable 414
@@ -650,5 +459,5 @@ public class TrainingText : MonoBehaviour {
         while (!answerIsCorrect);
         SubmitButton.OnInteract();
         yield return new WaitForSeconds(.1f);
-    }
+    }*/
 }
