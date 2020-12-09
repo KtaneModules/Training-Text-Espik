@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -271,7 +270,7 @@ public class TrainingText : MonoBehaviour {
     // Submit button pressed
     private void SubmitButtonPressed() {
         SubmitButton.AddInteractionPunch();
-        Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, gameObject.transform);
+        Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, SubmitButton.transform);
         bool correct = false;
 
         if (moduleSolved == false) {
@@ -341,7 +340,7 @@ public class TrainingText : MonoBehaviour {
     // Time button pressed
     private void TimeButtonPressed(int i) {
         TimeButtons[i].AddInteractionPunch(0.25f);
-        Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.BigButtonPress, gameObject.transform);
+        Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.BigButtonPress, TimeButtons[i].transform);
         if (moduleSolved == false) {
             /* 0 = Hour Up
              * 1 = Hour Down
@@ -360,12 +359,11 @@ public class TrainingText : MonoBehaviour {
         }
     }
     
- /*   // Twitch Plays Support - Thanks to eXish & kavinkul
+    // Twitch Plays Support - Thanks to eXish & kavinkul
 
-
-#pragma warning disable 414
+    #pragma warning disable 414
     private readonly string TwitchHelpMessage = @"!{0} hours/minutes <forward/backward> <#> [Adjusts the hours or minutes forward or backward on the clock by '#' (Hours and minutes will be modulo by 24 and 60 respectively)] | !{0} set <#:##/##:##> <AM/PM> [Sets the specified time in #:## or ##:## format to AM or PM on the clock and submits it] | !{0} submit [Submits the current time on the clock]";
-#pragma warning restore 414
+    #pragma warning restore 414
 
     IEnumerator ProcessTwitchCommand(string command) {
         command = command.ToLowerInvariant().Trim();
@@ -390,16 +388,16 @@ public class TrainingText : MonoBehaviour {
                     yield break;
                 }
                 yield return null;
-                int minutesDiff = Math.Abs(currentMinute - tpMins);
+                int minutesDiff = Math.Abs((currentTime % 60) - tpMins);
                 KMSelectable button;
-                button = currentMinute > tpMins ? minutesDiff > 30 ? TimeButtons[2] : TimeButtons[3] : minutesDiff > 30 ? TimeButtons[3] : TimeButtons[2];
-                while (currentMinute != tpMins) {
+                button = (currentTime % 60) > tpMins ? minutesDiff > 30 ? TimeButtons[2] : TimeButtons[3] : minutesDiff > 30 ? TimeButtons[3] : TimeButtons[2];
+                while ((currentTime % 60) != tpMins) {
                     button.OnInteract();
                     yield return new WaitForSeconds(.05f);
                     yield return "trycancel";
                 }
-                int AMPMOffset = currentState == "PM" ? 12 : 0;
-                int current24Hour = AMPMOffset + currentHour % 12;
+                int AMPMOffset = currentTime > 719 ? 12 : 0;
+                int current24Hour = AMPMOffset + currentTime / 60 % 12;
                 int target24Hour = (tpHours % 12) + (m.Groups[6].Value == "p" ? 12 : 0);
                 int hoursDiff = Math.Abs(current24Hour - target24Hour);
                 button = current24Hour > target24Hour ? hoursDiff > 12 ? TimeButtons[0] : TimeButtons[1] : hoursDiff > 12 ? TimeButtons[1] : TimeButtons[0];
@@ -407,8 +405,8 @@ public class TrainingText : MonoBehaviour {
                     button.OnInteract();
                     yield return new WaitForSeconds(.05f);
                     yield return "trycancel";
-                    AMPMOffset = currentState == "PM" ? 12 : 0;
-                    current24Hour = AMPMOffset + currentHour % 12;
+                    AMPMOffset = currentTime > 719 ? 12 : 0;
+                    current24Hour = AMPMOffset + currentTime / 60 % 12;
                 }
             }
             else {
@@ -423,41 +421,33 @@ public class TrainingText : MonoBehaviour {
     }
 
     //TP Autosolver variables
-    private bool submitCorrectTime = true;
-    private bool answerIsCorrect = false;
+    private bool answerIsCorrect;
     IEnumerator TwitchHandleForcedSolve() {
         do {
-            SubmitButtonPressed(true);
-            if (submitCorrectTime) {
-                string hourToSubmit = correctHour == 0 ? "12" : correctHour.ToString();
-                string minuteToSubmit = correctMinute.ToString();
-                if (minuteToSubmit.Length != 2)
-                    minuteToSubmit = "0" + minuteToSubmit;
-                yield return ProcessTwitchCommand("set " + hourToSubmit + ":" + minuteToSubmit + " " + correctState);
-            }
-            else {
-                int minuteToSubmit = finishingMinute + 1;
-                int hourToSubmit = finishingHour;
-                if (minuteToSubmit == 60) {
-                    minuteToSubmit = 0;
-                    hourToSubmit += 1;
-                }
-                hourToSubmit %= 24;
-                string stateToSubmit = hourToSubmit >= 12 ? "PM" : "AM";
-                hourToSubmit %= 12;
-                string minuteToSubmitString = minuteToSubmit.ToString();
-                if (minuteToSubmitString.Length != 2)
-                    minuteToSubmitString = "0" + minuteToSubmitString;
-                if (hourToSubmit == 0) hourToSubmit = 12;
-                yield return ProcessTwitchCommand("set " + hourToSubmit.ToString() + ":" + minuteToSubmitString + " " + stateToSubmit);
-            }
-            answerIsCorrect = false;
+            answerIsCorrect = true;
+            int temptime = correctTime;
+            string hourToSubmit = (correctTime / 60) == 0 ? "12" : (correctTime / 60).ToString();
+            if (int.Parse(hourToSubmit) > 12)
+                hourToSubmit = (int.Parse(hourToSubmit) - 12).ToString();
+            string minuteToSubmit = (correctTime % 60).ToString();
+            if (minuteToSubmit.Length != 2)
+                minuteToSubmit = "0" + minuteToSubmit;
+            yield return ProcessTwitchCommand("set " + hourToSubmit + ":" + minuteToSubmit + " " + ((correctTime > 719) ? "PM" : "AM"));
 
             //Due to length of input, check again if the answer is right.
-            SubmitButtonPressed(true);
+            if (DateTime.Now.DayOfWeek.ToString() != "Friday")
+            {
+                realTime = DateTime.Now.Hour * 60 + DateTime.Now.Minute;
+                if ((correctTime >= realTime - 60 && correctTime <= realTime + 60) ||
+                    (correctTime + 1440 >= realTime - 60 && correctTime + 1440 <= realTime + 60) ||
+                    (correctTime - 1440 >= realTime - 60 && correctTime - 1440 <= realTime + 60))
+                    correctTime = realTime;
+            }
+            if (temptime != correctTime)
+                answerIsCorrect = false;
         }
         while (!answerIsCorrect);
         SubmitButton.OnInteract();
         yield return new WaitForSeconds(.1f);
-    }*/
+    }
 }
