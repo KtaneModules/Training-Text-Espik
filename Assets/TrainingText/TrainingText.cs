@@ -39,25 +39,6 @@ public class TrainingText : MonoBehaviour {
 
     private bool displayingModuleName = false;
 
-    /*private int correctHour;
-    private int correctMinute;
-    private string correctState;
-
-    private int currentHour;
-    private int currentMinute;
-    private string currentState;
-
-    private int realHour;
-    private int realMinute;
-    private int realSecond;
-
-    private int finishingHour;
-    private int finishingMinute;
-    private int finishingSecond;
-
-    private int actualCorrectTime;
-    private int actualCurrentTime;*/
-
     private int correctTime = 0;
     private int currentTime = 0;
     private int realTime = 0;
@@ -152,9 +133,7 @@ public class TrainingText : MonoBehaviour {
 
         return time % 1440;
     }
-
-
-
+    
 
     // Calculates correct time
     private void CalculateCorrectTime() {
@@ -420,7 +399,7 @@ public class TrainingText : MonoBehaviour {
         yield break;
     }
 
-    //TP Autosolver variables
+    // TP Autosolver variables
     private bool answerIsCorrect;
     IEnumerator TwitchHandleForcedSolve() {
         do {
@@ -434,7 +413,7 @@ public class TrainingText : MonoBehaviour {
                 minuteToSubmit = "0" + minuteToSubmit;
             yield return ProcessTwitchCommand("set " + hourToSubmit + ":" + minuteToSubmit + " " + ((correctTime > 719) ? "PM" : "AM"));
 
-            //Due to length of input, check again if the answer is right.
+            // Due to length of input, check again if the answer is right.
             if (DateTime.Now.DayOfWeek.ToString() != "Friday")
             {
                 realTime = DateTime.Now.Hour * 60 + DateTime.Now.Minute;
