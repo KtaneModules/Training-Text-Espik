@@ -137,7 +137,7 @@ public class TrainingText : MonoBehaviour {
 
     // Calculates correct time
     private void CalculateCorrectTime() {
-        correctTime += module.getMonth() * 60;
+        correctTime += module.getMonth() % 12 * 60;
         correctTime += module.getDay();
 
         if (lastSerialDigit % 2 == 0)
