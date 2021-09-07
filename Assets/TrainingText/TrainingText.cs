@@ -204,7 +204,7 @@ public class TrainingText : MonoBehaviour {
             Debug.LogFormat("[Training Text #{0}] The time after Step 3 is {1}", moduleId, FormatTime(correctTime));
 
         // If the specified module is on the bomb
-        if (Bomb.GetSolvableModuleNames().Count(x => x.Contains(module.getModuleName())) > 0) {
+        if (Bomb.GetSolvableModuleNames().Contains(module.getModuleName())) {
             Debug.LogFormat("[Training Text #{0}] The module selected is present on the bomb.", moduleId);
 
             int currentState = currentTime / 720;
