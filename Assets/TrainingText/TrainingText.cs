@@ -207,9 +207,9 @@ public class TrainingText : MonoBehaviour {
         if (Bomb.GetSolvableModuleNames().Contains(module.getModuleName())) {
             Debug.LogFormat("[Training Text #{0}] The module selected is present on the bomb.", moduleId);
 
-            int currentState = currentTime / 720;
-            int currentHour = currentTime % 720 / 60;
-            int currentMinute = currentTime % 60;
+            int currentState = correctTime / 720;
+            int currentHour = correctTime % 720 / 60;
+            int currentMinute = correctTime % 60;
 
             currentState = (currentState + 1) % 2;
             currentHour = (currentHour + 6) % 12;
@@ -284,8 +284,8 @@ public class TrainingText : MonoBehaviour {
             // Correct answer
             if (currentTime == correctTime) {
                 Debug.LogFormat("[Training Text #{0}] Module solved!", moduleId);
-                GetComponent<KMBombModule>().HandlePass();
-                Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.CorrectChime, gameObject.transform);
+                Module.HandlePass();
+                Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.CorrectChime, transform);
                 moduleSolved = true;
                 correct = true;
             }
@@ -293,7 +293,7 @@ public class TrainingText : MonoBehaviour {
             // Incorrect answer
             else {
                 Debug.LogFormat("[Training Text #{0}] Strike!", moduleId);
-                GetComponent<KMBombModule>().HandleStrike();
+                Module.HandleStrike();
             }
         }
 
@@ -350,7 +350,7 @@ public class TrainingText : MonoBehaviour {
     // Twitch Plays Support - Thanks to eXish & kavinkul
 
     #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} hours/minutes <forward/backward> <#> [Adjusts the hours or minutes forward or backward on the clock by '#' (Hours and minutes will be modulo by 24 and 60 respectively)] | !{0} set <#:##/##:##> <AM/PM> [Sets the specified time in #:## or ##:## format to AM or PM on the clock and submits it] | !{0} submit [Submits the current time on the clock]";
+    private readonly string TwitchHelpMessage = @"!{0} hours/minutes <forward/backward> <#> [Adjusts the hours or minutes forward or backward on the clock by '#' (Hours and minutes will be modulo by 24 and 60 respectively)] | !{0} set <#:##/##:##> <AM/PM> [Sets the specified time in #:## or ##:## format to AM or PM on the clock] | !{0} submit [Submits the current time on the clock]";
     #pragma warning restore 414
 
     IEnumerator ProcessTwitchCommand(string command) {
