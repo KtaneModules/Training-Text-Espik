@@ -207,15 +207,15 @@ public class TrainingText : MonoBehaviour {
         if (Bomb.GetSolvableModuleNames().Contains(module.getModuleName())) {
             Debug.LogFormat("[Training Text #{0}] The module selected is present on the bomb.", moduleId);
 
-            int currentState = correctTime / 720;
-            int currentHour = correctTime % 720 / 60;
-            int currentMinute = correctTime % 60;
+            int correctState = correctTime / 720;
+            int correctHour = correctTime % 720 / 60;
+            int correctMinute = correctTime % 60;
 
-            currentState = (currentState + 1) % 2;
-            currentHour = (currentHour + 6) % 12;
-            currentMinute = (currentMinute + 30) % 60;
+            correctState = (correctState + 1) % 2;
+            correctHour = (correctHour + 6) % 12;
+            correctMinute = (correctMinute + 30) % 60;
 
-            correctTime = currentState * 720 + currentHour * 60 + currentMinute;
+            correctTime = correctState * 720 + correctHour * 60 + correctMinute;
         }
 
         Debug.LogFormat("[Training Text #{0}] The correct time to submit is {1}", moduleId, FormatTime(correctTime));
