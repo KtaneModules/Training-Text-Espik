@@ -25,7 +25,7 @@ public class AllFlavorTexts {
         flavorTexts.add(new FlavorTextObject("A Mistake", 2019, 5, 30, "Mistakes were made, deal with them."));
         flavorTexts.add(new FlavorTextObject("Abstract Sequences", 2020, 3, 10, "Abstract because it's made from a random series of numbers or what?"));
         flavorTexts.add(new FlavorTextObject("Accumulation", 2018, 10, 19, "One day you'll be forced to get rid of some of the stuff you have."));
-        flavorTexts.add(new FlavorTextObject("Addition", 2019, 12, 27, "Calculator on the ready."));
+        flavorTexts.add(new FlavorTextObject("Addition", 2020, 11, 17, "Calculator on the ready."));
         flavorTexts.add(new FlavorTextObject("Adjacent Letters", 2016, 11, 25, "Ehm, what?"));
         flavorTexts.add(new FlavorTextObject("Adventure Game", 2016, 8, 19, "No need to roll for initiative here."));
         flavorTexts.add(new FlavorTextObject("Affine Cycle", 2019, 8, 6, "Why I can't get the right Caesar shift correctly?"));
@@ -246,7 +246,7 @@ public class AllFlavorTexts {
         flavorTexts.add(new FlavorTextObject("Genetic Sequence", 2019, 2, 7, "Welp, after neutralizing the stuff from the other lab now we need to work on some DeoxyriboNucleic Acid."));
         flavorTexts.add(new FlavorTextObject("Geometry Dash", 2019, 10, 17, "Oh yeah, that mobile game. I see."));
         flavorTexts.add(new FlavorTextObject("The Giant's Drink", 2019, 4, 3, "*Bomb explodes*\n\"He chose... poorly.\""));
-        flavorTexts.add(new FlavorTextObject("Going Backwards", 2020, 1, 10, "More like \"Full throttle in reverse\". Right? No? Ok..."));
+        flavorTexts.add(new FlavorTextObject("Going Backwards", 2020, 11, 14, "More like \"Full throttle in reverse\". Right? No? Ok..."));
         flavorTexts.add(new FlavorTextObject("Graffiti Numbers", 2018, 5, 4, "How long did it take to make the module look like an actual wall?"));
         flavorTexts.add(new FlavorTextObject("Graphic Memory", 2019, 2, 23, "Because \"Shapes and Color\" doesn't sound better, I guess."));
         flavorTexts.add(new FlavorTextObject("Gray Cipher", 2019, 10, 22, "Or \"grey\", if you like."));
@@ -465,7 +465,6 @@ public class AllFlavorTexts {
         flavorTexts.add(new FlavorTextObject("Recolored Switches", 2020, 3, 24, "And here we go again with more switches."));
         flavorTexts.add(new FlavorTextObject("Recorded Keys", 2019, 6, 26, "Something something record, something something not order. And sounds."));
         flavorTexts.add(new FlavorTextObject("Red Arrows", 2019, 5, 31, "I don't know why but this modules makes me think of the \"Red Ribbon Army\" from Dragonball."));
-        flavorTexts.add(new FlavorTextObject("Red Buttons", 2019, 9, 14, "Tip: the answer is not the number shown in 90% of the cases."));
         flavorTexts.add(new FlavorTextObject("Red Cipher", 2019, 9, 2, "Wait, is this a made up cipher?"));
         flavorTexts.add(new FlavorTextObject("Regular Crazy Talk", 2018, 12, 29, "Even the name is part of this module's gimmick."));
         flavorTexts.add(new FlavorTextObject("Reordered Keys", 2019, 6, 10, "Well, they certainly need to get reordered again."));
