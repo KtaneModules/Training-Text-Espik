@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.UI;
-using KModkit;
-
-public class AllFlavorTexts {
+﻿public class AllFlavorTexts {
     public static FlavorTextList AddFlavorTexts() {
         FlavorTextList flavorTexts = new FlavorTextList();
 
@@ -84,7 +76,7 @@ public class AllFlavorTexts {
         flavorTexts.add(new FlavorTextObject("Cruel Boolean Maze", 2019, 11, 11, "Boolean Maze but it has extra logic in it."));
         flavorTexts.add(new FlavorTextObject("Boolean Venn Diagram", 2017, 6, 22, "Boolean operations and Venn diagrams.What could possibly go wrong?"));
         flavorTexts.add(new FlavorTextObject("Boolean Wires", 2019, 8, 3, "Self-repairing wires? That's some interesting tech."));
-        flavorTexts.add(new FlavorTextObject("Boot Too Big", 2017, 7, 19, "Hope you remember every module's name and how to pronounce them."));
+        flavorTexts.add(new FlavorTextObject("Boot Too Big", 2019, 7, 19, "Hope you remember every module's name and how to pronounce them."));
         flavorTexts.add(new FlavorTextObject("Bordered Keys", 2019, 6, 17, "Meanwhile, these have borders?"));
         flavorTexts.add(new FlavorTextObject("Boxing", 2020, 1, 21, "*Reads the list with the names*\nOh, I get it."));
         flavorTexts.add(new FlavorTextObject("Braille", 2017, 10, 31, "Oh, so that's the name of this alphabet. Good to know."));
